@@ -43,6 +43,10 @@ export function ClipDetail() {
   } = useFilterChain();
 
   useEffect(() => {
+    if (!user) {
+      navigate('/', { replace: true });
+      return;
+    }
     if (!id) return;
     api
       .get<ClipData>(`/clips/${id}`)
@@ -51,7 +55,7 @@ export function ClipDetail() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user, navigate]);
 
   const isOwner = user && clip && user.id === clip.user_id;
 

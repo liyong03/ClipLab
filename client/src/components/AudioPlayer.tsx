@@ -32,13 +32,29 @@ export function AudioPlayer({
   const animFrameRef = useRef<number>(0);
 
   useEffect(() => {
+    let revoke: string | null = null;
+
     if (typeof src === 'string') {
-      setAudioUrl(src);
+      const token = localStorage.getItem('token');
+      fetch(src, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((res) => res.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          revoke = url;
+          setAudioUrl(url);
+        })
+        .catch(console.error);
     } else {
       const url = URL.createObjectURL(src);
+      revoke = url;
       setAudioUrl(url);
-      return () => URL.revokeObjectURL(url);
     }
+
+    return () => {
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
   }, [src]);
 
   const updateProgress = useCallback(() => {

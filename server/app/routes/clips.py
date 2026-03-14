@@ -104,6 +104,7 @@ async def list_clips(
     page: int = 1,
     limit: int = 10,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     offset = (page - 1) * limit
     result = await db.execute(
@@ -118,7 +119,7 @@ async def list_clips(
 
 
 @router.get("/{clip_id}")
-async def get_clip(clip_id: str, db: AsyncSession = Depends(get_db)):
+async def get_clip(clip_id: str, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     result = await db.execute(
         select(Clip, User.username).join(User).where(Clip.id == clip_id)
     )
@@ -134,6 +135,7 @@ async def serve_audio(
     clip_id: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     storage: StorageProvider = Depends(get_storage),
 ):
     clip = await _get_clip_or_404(clip_id, db)
