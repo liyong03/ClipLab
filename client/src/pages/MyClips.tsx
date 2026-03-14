@@ -23,23 +23,46 @@ export function MyClips() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  if (!user) return <p>Please login to see your clips.</p>;
-  if (loading) return <p>Loading...</p>;
-  if (clips.length === 0) return <p>You haven't uploaded any clips yet.</p>;
+  if (!user) {
+    return (
+      <div className="page">
+        <div className="empty-state">
+          <p>Please login to see your clips.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) return <div className="page"><p style={{ color: 'var(--text-tertiary)' }}>Loading...</p></div>;
 
   return (
-    <div>
-      <h2>My Clips</h2>
-      <ul>
-        {clips.map((clip) => (
-          <li key={clip.id}>
-            <Link to={`/clips/${clip.id}`}>
-              <strong>{clip.title}</strong>
-            </Link>
-            {' '}<span>{new Date(clip.created_at).toLocaleDateString()}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="page">
+      <div className="page-header">
+        <h1>My Clips</h1>
+        <p>All your recorded and uploaded clips.</p>
+      </div>
+
+      {clips.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">🎙</div>
+          <p>You haven't uploaded any clips yet.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {clips.map((clip) => (
+            <div key={clip.id} className="clip-card">
+              <div className="clip-card-header">
+                <Link to={`/clips/${clip.id}`} className="clip-card-title">
+                  {clip.title}
+                </Link>
+                <span className="clip-card-meta">
+                  {new Date(clip.created_at).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

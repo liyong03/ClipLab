@@ -12,11 +12,11 @@ export function Login() {
   };
 
   return (
-    <div>
+    <div className="page">
       <AuthForm mode="login" onSubmit={handleLogin} />
-      <p>
+      <div className="auth-footer">
         Don't have an account? <Link to="/register">Register</Link>
-      </p>
+      </div>
     </div>
   );
 }

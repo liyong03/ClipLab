@@ -69,6 +69,6 @@ describe('ClipFeed', () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText('No clips yet.')).toBeDefined();
+    expect(await screen.findByText('No clips yet. Be the first to record one!')).toBeDefined();
   });
 });

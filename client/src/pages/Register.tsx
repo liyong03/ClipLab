@@ -12,11 +12,11 @@ export function Register() {
   };
 
   return (
-    <div>
+    <div className="page">
       <AuthForm mode="register" onSubmit={handleRegister} />
-      <p>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+      <div className="auth-footer">
+        Already have an account? <Link to="/login">Sign in</Link>
+      </div>
     </div>
   );
 }

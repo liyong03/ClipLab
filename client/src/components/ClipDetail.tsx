@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useFilterChain } from '../hooks/useFilterChain';
 import { FilterChain } from './FilterChain';
-import { WaveformView } from './WaveformView';
+import { AudioPlayer } from './AudioPlayer';
 import type { FilterSetting } from '../filters/types';
 
 interface ClipData {
@@ -51,7 +51,6 @@ export function ClipDetail() {
 
   const handleEdit = async () => {
     if (!clip) return;
-    // Load saved filter settings
     const saved: FilterSetting[] = JSON.parse(clip.filter_settings);
     if (saved.length > 0) {
       setFilterSettings(saved);
@@ -63,23 +62,18 @@ export function ClipDetail() {
     if (!clip || !id) return;
     setSaving(true);
     try {
-      // Fetch raw audio
       const rawResp = await fetch(`/api/clips/${id}/raw`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       const rawBlob = await rawResp.blob();
-
-      // Render filtered audio
       const filteredBlob = await renderFilteredAudio(rawBlob);
 
-      // Upload
       const formData = new FormData();
       formData.append('filter_settings', JSON.stringify(filterSettings));
       formData.append('filtered_audio', filteredBlob, 'filtered.wav');
 
       await api.put(`/clips/${id}`, formData);
 
-      // Refresh clip data
       const updated = await api.get<ClipData>(`/clips/${id}`);
       setClip(updated);
       setEditing(false);
@@ -90,35 +84,46 @@ export function ClipDetail() {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (!clip) return <p>Clip not found.</p>;
+  if (loading) return <div className="page"><p style={{ color: 'var(--text-tertiary)' }}>Loading...</p></div>;
+  if (!clip) return <div className="page"><p style={{ color: 'var(--text-tertiary)' }}>Clip not found.</p></div>;
+
+  const peaks = clip.waveform ? JSON.parse(clip.waveform) : undefined;
 
   return (
-    <div>
-      <h2>{clip.title}</h2>
-      <p>by {clip.username} on {new Date(clip.created_at).toLocaleDateString()}</p>
+    <div className="page">
+      <div className="page-header">
+        <h1>{clip.title}</h1>
+        <p>
+          by {clip.username} &middot; {new Date(clip.created_at).toLocaleDateString()}
+        </p>
+      </div>
 
-      {clip.waveform && (
-        <WaveformView peaks={JSON.parse(clip.waveform)} />
-      )}
-
-      <audio controls src={`/api/clips/${clip.id}/audio`} />
+      <div className="card" style={{ marginBottom: 20 }}>
+        <AudioPlayer
+          src={`/api/clips/${clip.id}/audio`}
+          peaks={peaks}
+        />
+      </div>
 
       {isOwner && !editing && (
-        <button onClick={handleEdit}>Edit Filters</button>
+        <button className="btn btn-secondary" onClick={handleEdit}>
+          Edit Filters
+        </button>
       )}
 
       {editing && (
-        <div>
+        <div className="card" style={{ marginTop: 16 }}>
           <FilterChain
             filterSettings={filterSettings}
             onToggle={toggleFilter}
             onParamChange={updateParam}
           />
-          <button onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save'}
-          </button>
-          <button onClick={() => setEditing(false)}>Cancel</button>
+          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button className="btn btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
+          </div>
         </div>
       )}
     </div>

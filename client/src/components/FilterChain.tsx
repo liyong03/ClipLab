@@ -10,7 +10,7 @@ interface FilterChainProps {
 
 export function FilterChain({ filterSettings, onToggle, onParamChange }: FilterChainProps) {
   return (
-    <div>
+    <div className="filter-chain">
       <h3>Filters</h3>
       {filterSettings.map((setting) => {
         const plugin = getFilter(setting.filterId);
@@ -19,22 +19,18 @@ export function FilterChain({ filterSettings, onToggle, onParamChange }: FilterC
         return (
           <div
             key={setting.filterId}
-            style={{
-              border: '1px solid #ccc',
-              padding: 8,
-              marginBottom: 8,
-              opacity: setting.enabled ? 1 : 0.5,
-            }}
+            className={`filter-item ${setting.enabled ? '' : 'disabled'}`}
           >
-            <label>
+            <div className="filter-item-header">
               <input
                 type="checkbox"
+                className="filter-toggle"
                 checked={setting.enabled}
                 onChange={() => onToggle(setting.filterId)}
               />
-              {plugin.name}
-              {plugin.serverSide && ' (Server)'}
-            </label>
+              <span className="filter-name">{plugin.name}</span>
+              {plugin.serverSide && <span className="filter-badge">Server</span>}
+            </div>
             {setting.enabled && (
               <FilterControl
                 paramDefs={plugin.params}

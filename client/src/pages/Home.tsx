@@ -55,12 +55,11 @@ export function Home() {
   };
 
   return (
-    <div>
-      <h1>ClipLab</h1>
-
+    <div className="page">
       {user && (
-        <section>
+        <section className="record-section">
           <h2>Record a Clip</h2>
+          <p>Capture audio, apply filters, and share with the community.</p>
           <Recorder onRecordingComplete={handleRecordingComplete} />
 
           {audioBlob && (
@@ -72,29 +71,41 @@ export function Home() {
               />
               <AudioPreview
                 audioBlob={audioBlob}
-                onPlay={playWithFilters}
+                onPlayWithFilters={playWithFilters}
                 onStop={stopPlayback}
               />
-              <div>
+              <div className="upload-section">
                 <input
+                  className="input"
                   type="text"
-                  placeholder="Clip title"
+                  placeholder="Give your clip a title..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
-                <button onClick={handleUpload} disabled={uploading || !title.trim()}>
+                <button
+                  className="btn btn-primary btn-lg"
+                  onClick={handleUpload}
+                  disabled={uploading || !title.trim()}
+                >
                   {uploading ? 'Uploading...' : 'Upload'}
                 </button>
               </div>
-              {error && <p style={{ color: 'red' }}>{error}</p>}
+              {error && <p className="form-error" style={{ marginTop: 8 }}>{error}</p>}
             </>
           )}
         </section>
       )}
 
-      {!user && <p>Login or register to start recording clips.</p>}
+      {!user && (
+        <div className="empty-state">
+          <div className="empty-state-icon">🎙</div>
+          <p>Login or register to start recording clips.</p>
+        </div>
+      )}
 
-      <ClipFeed />
+      <div style={{ marginTop: 32 }}>
+        <ClipFeed />
+      </div>
     </div>
   );
 }
