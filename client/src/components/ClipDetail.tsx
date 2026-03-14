@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useFilterChain } from '../hooks/useFilterChain';
@@ -21,11 +21,14 @@ interface ClipData {
 
 export function ClipDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [clip, setClip] = useState<ClipData | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [rawBlob, setRawBlob] = useState<Blob | null>(null);
   const [audioCacheBust, setAudioCacheBust] = useState(0);
 
@@ -102,6 +105,19 @@ export function ClipDetail() {
     setRawBlob(null);
   };
 
+  const handleDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/clips/${id}`);
+      navigate('/');
+    } catch (err) {
+      console.error('Failed to delete:', err);
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   if (loading) return <div className="page"><p style={{ color: 'var(--text-tertiary)' }}>Loading...</p></div>;
   if (!clip) return <div className="page"><p style={{ color: 'var(--text-tertiary)' }}>Clip not found.</p></div>;
 
@@ -128,9 +144,25 @@ export function ClipDetail() {
       </div>
 
       {isOwner && !editing && (
-        <button className="btn btn-secondary" onClick={handleEdit}>
-          Edit Filters
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-secondary" onClick={handleEdit}>
+            Edit Filters
+          </button>
+          {!confirmDelete ? (
+            <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>
+              Delete
+            </button>
+          ) : (
+            <>
+              <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+              <button className="btn btn-ghost" onClick={() => setConfirmDelete(false)} disabled={deleting}>
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
       )}
 
       {editing && rawBlob && (
