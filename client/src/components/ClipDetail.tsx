@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFilterChain } from '../hooks/useFilterChain';
 import { FilterChain } from './FilterChain';
 import { AudioPlayer } from './AudioPlayer';
+import { AudioPreview } from './AudioPreview';
 import type { FilterSetting } from '../filters/types';
 
 interface ClipData {
@@ -26,8 +27,6 @@ export function ClipDetail() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [rawBlob, setRawBlob] = useState<Blob | null>(null);
-  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
-  const [rendering, setRendering] = useState(false);
   const [audioCacheBust, setAudioCacheBust] = useState(0);
 
   const {
@@ -70,27 +69,7 @@ export function ClipDetail() {
     // Fetch raw audio for preview
     const blob = await fetchRawAudio();
     setRawBlob(blob);
-    setPreviewBlob(null);
     setEditing(true);
-  };
-
-  const handlePreview = async () => {
-    if (!rawBlob) return;
-    setRendering(true);
-    try {
-      const filtered = await renderFilteredAudio(rawBlob);
-      setPreviewBlob(filtered);
-    } catch (err) {
-      console.error('Preview failed:', err);
-    } finally {
-      setRendering(false);
-    }
-  };
-
-  const handlePlayRealtime = () => {
-    if (rawBlob) {
-      playWithFilters(rawBlob);
-    }
   };
 
   const handleSave = async () => {
@@ -110,7 +89,6 @@ export function ClipDetail() {
       setAudioCacheBust(Date.now());
       setEditing(false);
       setRawBlob(null);
-      setPreviewBlob(null);
     } catch (err) {
       console.error('Failed to save:', err);
     } finally {
@@ -122,7 +100,6 @@ export function ClipDetail() {
     stopPlayback();
     setEditing(false);
     setRawBlob(null);
-    setPreviewBlob(null);
   };
 
   if (loading) return <div className="page"><p style={{ color: 'var(--text-tertiary)' }}>Loading...</p></div>;
@@ -156,7 +133,7 @@ export function ClipDetail() {
         </button>
       )}
 
-      {editing && (
+      {editing && rawBlob && (
         <>
           <div className="card" style={{ marginTop: 16 }}>
             <FilterChain
@@ -165,28 +142,14 @@ export function ClipDetail() {
               onParamChange={updateParam}
             />
 
-            <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button className="btn btn-secondary" onClick={handlePlayRealtime}>
-                Play with Filters
-              </button>
-              <button className="btn btn-ghost" onClick={stopPlayback}>
-                Stop
-              </button>
-              <button className="btn btn-secondary" onClick={handlePreview} disabled={rendering}>
-                {rendering ? 'Rendering...' : 'Render Preview'}
-              </button>
-            </div>
-          </div>
+            <AudioPreview
+              audioBlob={rawBlob}
+              onPlayWithFilters={playWithFilters}
+              onStop={stopPlayback}
+              showRawPlayer={false}
+            />
 
-          {/* Preview of the rendered filtered audio */}
-          {previewBlob && (
-            <div className="card" style={{ marginTop: 16 }}>
-              <h4 style={{ marginBottom: 12, color: 'var(--text-secondary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Preview (New Filters Applied)
-              </h4>
-              <AudioPlayer src={previewBlob} />
-            </div>
-          )}
+          </div>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
             <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
