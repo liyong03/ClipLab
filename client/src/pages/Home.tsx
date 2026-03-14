@@ -60,7 +60,7 @@ export function Home() {
         <section className="record-section">
           <h2>Record a Clip</h2>
           <p>Capture audio, apply filters, and share with the community.</p>
-          <Recorder onRecordingComplete={handleRecordingComplete} />
+          {!audioBlob && <Recorder onRecordingComplete={handleRecordingComplete} />}
 
           {audioBlob && (
             <>
@@ -88,6 +88,12 @@ export function Home() {
                   disabled={uploading || !title.trim()}
                 >
                   {uploading ? 'Uploading...' : 'Upload'}
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => { setAudioBlob(null); setDuration(0); setTitle(''); stopPlayback(); }}
+                >
+                  Discard
                 </button>
               </div>
               {error && <p className="form-error" style={{ marginTop: 8 }}>{error}</p>}
