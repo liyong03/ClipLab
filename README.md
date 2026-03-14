@@ -2,45 +2,22 @@
 
 Audio recording, filtering, and sharing web application. Record audio in the browser, apply stackable audio filters, preview the result, and share clips in a public feed.
 
-## Features
+## How to Run Locally
 
-- Browser-based audio recording via MediaRecorder API
-- Stackable, toggleable audio filters (gain, low-pass, high-pass, compressor, delay/echo)
-- Real-time filter preview via Web Audio API
-- Upload clips with raw + filtered audio + filter settings
-- Edit filters on existing clips and re-render
-- Public clip feed with playback
-- Per-clip waveform visualization
-- User auth (register/login) with JWT
-- Owner-only clip editing and deletion
-- Pluggable filter architecture (easy to add new client-side or server-side filters)
-- Abstract storage layer (local filesystem or S3)
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React + TypeScript (Vite), Web Audio API |
-| Backend | Python + FastAPI |
-| Database | SQLite (aiosqlite + SQLAlchemy) |
-| Storage | Local filesystem (dev) / S3 (prod) |
-| Auth | JWT (python-jose) + bcrypt (passlib) |
-| Audio | librosa, soundfile (waveform generation) |
-| Testing | Vitest (client), pytest (server) |
-
-## Prerequisites
+### Prerequisites
 
 - Node.js >= 18
 - Python >= 3.11
 - npm
 
-## Quick Start
-
-### 1. Clone and setup
+### Setup
 
 ```bash
+# Clone the repo
 git clone <repo-url>
 cd ClipLab
+
+# Install all dependencies (client + server)
 make setup
 ```
 
@@ -56,51 +33,157 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-### 2. Run development servers
+### Run Development Servers
 
 ```bash
 make dev
 ```
 
 This starts:
-- Frontend at http://localhost:5173 (Vite dev server)
-- Backend at http://localhost:8000 (FastAPI with auto-reload)
+- **Frontend** at http://localhost:5173 (Vite dev server)
+- **Backend** at http://localhost:8000 (FastAPI with auto-reload)
 
 The Vite dev server proxies `/api` requests to the backend.
 
-Or run them separately:
+Or run them separately in two terminals:
 
 ```bash
-# Terminal 1
+# Terminal 1 - Backend
 make dev-server
 
-# Terminal 2
+# Terminal 2 - Frontend
 make dev-client
 ```
 
-### 3. Open the app
+### Using the App
 
-Navigate to http://localhost:5173
+1. Open http://localhost:5173
+2. Register an account
+3. Click **Record** and allow microphone access
+4. Stop recording, toggle filters, adjust parameters
+5. Click **Preview with Filters** to hear the result
+6. Enter a title and click **Upload**
+7. Your clip appears in the feed
 
-1. Register an account
-2. Click **Record** and allow microphone access
-3. Stop recording, toggle filters, adjust parameters
-4. Click **Preview with Filters** to hear the result
-5. Enter a title and click **Upload**
-6. Your clip appears in the feed
-
-## Running Tests
+### Running Tests
 
 ```bash
-# All tests
-make test
-
-# Client only
-make test-client
-
-# Server only
-make test-server
+make test          # All tests
+make test-client   # Client only (Vitest)
+make test-server   # Server only (pytest)
 ```
+
+---
+
+## What I Built
+
+### Core Features (Implemented)
+
+- **Browser-based audio recording** via MediaRecorder API
+- **Stackable audio filters** with real-time preview:
+  - Gain (volume control)
+  - Low-pass filter (remove high frequencies)
+  - High-pass filter (remove low frequencies)
+  - Compressor (dynamic range compression)
+  - Delay/Echo effect
+- **Filter chain UI** - toggle filters on/off, adjust parameters with sliders
+- **Real-time filter preview** using Web Audio API (hear changes before saving)
+- **Clip upload** - stores both raw and filtered audio with filter settings
+- **Edit existing clips** - re-apply different filters to raw audio and save
+- **Public clip feed** with audio playback
+- **Waveform visualization** for each clip (generated server-side with librosa)
+- **User authentication** (register/login) with JWT tokens
+- **Owner-only permissions** - only clip owners can edit/delete their clips
+- **Pluggable filter architecture** - easy to add new filters
+- **Abstract storage layer** - supports local filesystem (dev) and S3 (prod)
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19 + TypeScript, Vite, Web Audio API |
+| Backend | Python + FastAPI |
+| Database | SQLite (async via aiosqlite + SQLAlchemy 2.0) |
+| Storage | Local filesystem / S3 |
+| Auth | JWT (python-jose) + bcrypt (passlib) |
+| Audio Processing | librosa, soundfile |
+| Testing | Vitest (client), pytest (server) |
+
+### What I Skipped
+
+- **Server-side audio processing** - All filtering happens client-side via Web Audio API. The server stores raw audio but doesn't process it (except waveform generation).
+- **Social features** - No comments, likes, follows, or user profiles beyond basic auth.
+- **Search/discovery** - No search functionality or clip categorization/tagging.
+- **Mobile optimization** - Basic responsive layout but not optimized for mobile recording.
+- **Production deployment config** - No Docker, CI/CD, or production-ready infrastructure.
+- **Rate limiting / abuse prevention** - No upload limits or spam protection.
+- **Audio format conversion** - Stores whatever format the browser records (typically webm/opus).
+- **E2E tests** - Test infrastructure exists but no comprehensive E2E test suite.
+
+---
+
+## Key Tradeoffs
+
+### Client-side vs Server-side Audio Processing
+
+**Chose:** Client-side filtering with Web Audio API
+
+**Why:** Enables real-time preview without round-trips to the server. Users can hear filter changes instantly before committing. Reduces server load and storage costs.
+
+**Tradeoff:** Limited to what Web Audio API supports. Can't use Python ML libraries (noise reduction, AI effects) without adding server-side processing pipeline.
+
+### Storing Raw + Filtered Audio
+
+**Chose:** Store both versions on upload
+
+**Why:** Enables non-destructive editing. Users can re-apply different filters to the original recording without quality loss from re-encoding.
+
+**Tradeoff:** 2x storage cost per clip. Could optimize by only storing raw and rendering filtered on-demand, but that would require server-side filter processing.
+
+### SQLite vs PostgreSQL
+
+**Chose:** SQLite with async driver (aiosqlite)
+
+**Why:** Zero setup, single-file database, perfect for development and small deployments. Async driver keeps FastAPI non-blocking.
+
+**Tradeoff:** Not suitable for high-concurrency production. Would need to migrate to PostgreSQL for scale.
+
+### JWT in localStorage
+
+**Chose:** Store JWT in localStorage, send via Authorization header
+
+**Why:** Simple implementation, works well with SPA architecture, easy to debug.
+
+**Tradeoff:** Vulnerable to XSS. Production should use httpOnly cookies with CSRF protection.
+
+---
+
+## Next Steps
+
+### Short-term Improvements
+
+1. **Add more filters** - Reverb, pitch shift, noise gate, EQ bands
+2. **Server-side filter option** - Enable ML-based processing (noise reduction, voice enhancement) via Python
+3. **Better error handling** - User-friendly error messages, retry logic for uploads
+4. **Loading states** - Skeleton loaders, progress indicators for uploads
+
+### Medium-term Features
+
+1. **Search and tags** - Let users tag clips, search by title/tag
+2. **User profiles** - Public profile pages showing user's clips
+3. **Social features** - Likes, comments, follows
+4. **Audio format normalization** - Convert all uploads to consistent format (e.g., mp3)
+
+### Production Readiness
+
+1. **PostgreSQL migration** - For concurrent access and better scaling
+2. **Docker + docker-compose** - Containerized deployment
+3. **CI/CD pipeline** - Automated testing and deployment
+4. **Rate limiting** - Prevent abuse, limit upload frequency/size
+5. **CDN for audio** - Serve audio files from CloudFront/similar
+6. **Monitoring** - Error tracking, performance monitoring
+
+---
 
 ## Project Structure
 
