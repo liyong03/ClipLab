@@ -137,11 +137,10 @@ CREATE TABLE clips (
 ### Clips
 | Method | Path                          | Auth       | Description                          |
 |--------|-------------------------------|------------|--------------------------------------|
-| GET    | `/api/clips`                  | No         | Public feed (all clips, paginated)   |
-| GET    | `/api/users/{username}/clips` | No         | User's clips                         |
+| GET    | `/api/clips`                  | Yes        | Clip feed (all clips, paginated)     |
 | POST   | `/api/clips`                  | Yes        | Upload clip (raw + filtered + meta)  |
-| GET    | `/api/clips/{id}`             | No         | Clip metadata + filterSettings       |
-| GET    | `/api/clips/{id}/audio`       | No         | Stream filtered audio                |
+| GET    | `/api/clips/{id}`             | Yes        | Clip metadata + filterSettings       |
+| GET    | `/api/clips/{id}/audio`       | Yes        | Stream filtered audio                |
 | GET    | `/api/clips/{id}/raw`         | Owner only | Stream raw audio (for re-editing)    |
 | PUT    | `/api/clips/{id}`             | Owner only | Update filtered audio + filters      |
 | DELETE | `/api/clips/{id}`             | Owner only | Delete clip                          |
@@ -402,18 +401,18 @@ Order in the array = order in the audio processing chain.
 
 ## Implementation Phases
 
-### Phase 1: Project Setup
-- [ ] Init project structure (`client/` + `server/`)
-- [ ] Vite + React + TS for client
-- [ ] Python venv (`server/.venv`) + `pip install -r requirements.txt`
-- [ ] FastAPI + uvicorn for server, with auto-reload
-- [ ] Vite proxy config (dev requests → FastAPI on port 8000)
-- [ ] ESLint + Prettier for client
-- [ ] Ruff for server (linting + formatting)
-- [ ] Setup Vitest for client
-- [ ] Setup pytest + pytest-asyncio for server
-- [ ] Setup Playwright for E2E
-- [ ] Makefile with dev/build/test commands
+### Phase 1: Project Setup ✅
+- [x] Init project structure (`client/` + `server/`)
+- [x] Vite + React + TS for client
+- [x] Python venv (`server/.venv`) + `pip install -r requirements.txt`
+- [x] FastAPI + uvicorn for server, with auto-reload
+- [x] Vite proxy config (dev requests → FastAPI on port 8000)
+- [x] ESLint + Prettier for client
+- [x] Ruff for server (linting + formatting)
+- [x] Setup Vitest for client
+- [x] Setup pytest + pytest-asyncio for server
+- [x] Setup Playwright for E2E
+- [x] Makefile with dev/build/test commands
 
 **Tests:**
 - Vitest config runs and reports 0 tests (smoke test the setup)
@@ -424,18 +423,18 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 2: Auth (Backend + Frontend)
-- [ ] `users` table + SQLAlchemy model
-- [ ] Pydantic schemas for register/login request/response
-- [ ] `POST /api/auth/register` — validate input, hash password, insert user, return JWT
-- [ ] `POST /api/auth/login` — verify credentials, return JWT
-- [ ] `GET /api/auth/me` — return current user from token
-- [ ] Auth dependency (`get_current_user`) using FastAPI `Depends`
-- [ ] `AuthContext` provider on frontend
-- [ ] `useAuth` hook (login, register, logout, current user)
-- [ ] Login + Register pages
-- [ ] Protected route wrapper
-- [ ] Auth header injection in API client
+### Phase 2: Auth (Backend + Frontend) ✅
+- [x] `users` table + SQLAlchemy model
+- [x] Pydantic schemas for register/login request/response
+- [x] `POST /api/auth/register` — validate input, hash password, insert user, return JWT
+- [x] `POST /api/auth/login` — verify credentials, return JWT
+- [x] `GET /api/auth/me` — return current user from token
+- [x] Auth dependency (`get_current_user`) using FastAPI `Depends`
+- [x] `AuthContext` provider on frontend
+- [x] `useAuth` hook (login, register, logout, current user)
+- [x] Login + Register pages
+- [x] Protected route wrapper
+- [x] Auth header injection in API client
 
 **Tests:**
 - **Unit (server, pytest):** password hashing, JWT generation/verification, input validation (Pydantic)
@@ -455,11 +454,11 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 3: Audio Recording
-- [ ] `useRecorder` hook — request mic, start/stop, produce Blob (webm/opus)
-- [ ] `Recorder` component — record button (idle / recording / stopped states)
-- [ ] Basic playback of raw recording via `<audio>` element
-- [ ] Duration tracking
+### Phase 3: Audio Recording ✅
+- [x] `useRecorder` hook — request mic, start/stop, produce Blob (webm/opus)
+- [x] `Recorder` component — record button (idle / recording states, auto-submits on stop)
+- [x] Basic playback of raw recording via `<audio>` element
+- [x] Duration tracking
 
 **Tests:**
 - **Unit (client, Vitest):** `useRecorder` hook with mocked `MediaRecorder` and `getUserMedia`
@@ -472,15 +471,15 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 4: Pluggable Filter System (Client-Side)
-- [ ] Define `FilterPlugin` and `FilterParamDef` interfaces in `filters/types.ts`
-- [ ] Implement filter registry (`registerFilter`, `getFilter`, `getAllFilters`)
-- [ ] Implement built-in filters: gain, lowpass, highpass, compressor, delay
-- [ ] `useFilterChain` hook — build/rebuild Web Audio graph from enabled filters
-- [ ] `FilterChain` component — list filters, toggle on/off, adjust params
-- [ ] `FilterControl` component — render controls from `FilterParamDef`
-- [ ] `AudioPreview` component — play recording through filter chain
-- [ ] Render filtered audio to Blob via `OfflineAudioContext` for upload
+### Phase 4: Pluggable Filter System (Client-Side) ✅
+- [x] Define `FilterPlugin` and `FilterParamDef` interfaces in `filters/types.ts`
+- [x] Implement filter registry (`registerFilter`, `getFilter`, `getAllFilters`)
+- [x] Implement built-in filters: gain, lowpass, highpass, compressor, delay
+- [x] `useFilterChain` hook — build/rebuild Web Audio graph from enabled filters
+- [x] `FilterChain` component — list filters, toggle on/off, adjust params
+- [x] `FilterControl` component — render controls from `FilterParamDef`
+- [x] `AudioPreview` component — play recording through filter chain (with fancy preview button)
+- [x] Render filtered audio to Blob via `OfflineAudioContext` for upload
 
 **Tests:**
 - **Unit (client, Vitest):**
@@ -499,12 +498,12 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 5: Storage Abstraction
-- [ ] Define `StorageProvider` ABC
-- [ ] Implement `LocalStorageProvider`
-- [ ] Implement `S3StorageProvider`
-- [ ] Provider factory with env-based config via pydantic-settings
-- [ ] Inject provider via FastAPI dependency
+### Phase 5: Storage Abstraction ✅
+- [x] Define `StorageProvider` ABC
+- [x] Implement `LocalStorageProvider`
+- [x] Implement `S3StorageProvider`
+- [x] Provider factory with env-based config via pydantic-settings
+- [x] Inject provider via FastAPI dependency
 
 **Tests:**
 - **Unit (server, pytest):**
@@ -517,18 +516,17 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 6: Clip Upload & API
-- [ ] `clips` table + SQLAlchemy model
-- [ ] Pydantic schemas for clip request/response
-- [ ] `POST /api/clips` — accept multipart (raw audio + filtered audio + title + filterSettings), save via storage provider, insert DB row
-- [ ] `GET /api/clips` — list clips with pagination (public feed)
-- [ ] `GET /api/users/{username}/clips` — user's clips
-- [ ] `GET /api/clips/{id}` — single clip metadata
-- [ ] `GET /api/clips/{id}/audio` — stream filtered audio via `StreamingResponse`
-- [ ] `GET /api/clips/{id}/raw` — stream raw audio (owner only)
-- [ ] `PUT /api/clips/{id}` — update filtered audio + filterSettings (owner only)
-- [ ] `DELETE /api/clips/{id}` — delete clip + files (owner only)
-- [ ] Frontend upload flow: render filtered blob → send raw + filtered + settings via FormData
+### Phase 6: Clip Upload & API ✅
+- [x] `clips` table + SQLAlchemy model
+- [x] Pydantic schemas for clip request/response
+- [x] `POST /api/clips` — accept multipart (raw audio + filtered audio + title + filterSettings), save via storage provider, insert DB row
+- [x] `GET /api/clips` — list clips with pagination (auth required)
+- [x] `GET /api/clips/{id}` — single clip metadata (auth required)
+- [x] `GET /api/clips/{id}/audio` — stream filtered audio (auth required)
+- [x] `GET /api/clips/{id}/raw` — stream raw audio (owner only)
+- [x] `PUT /api/clips/{id}` — update filtered audio + filterSettings (owner only)
+- [x] `DELETE /api/clips/{id}` — delete clip + files (owner only)
+- [x] Frontend upload flow: render filtered blob → send raw + filtered + settings via FormData
 
 **Tests:**
 - **Integration (server, httpx AsyncClient):**
@@ -550,15 +548,16 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 7: Feed & Detail Pages
-- [ ] `ClipFeed` component — fetch + render clip list, play inline
-- [ ] `ClipDetail` component — full clip view, playback, waveform
-- [ ] "Edit Filters" mode on detail page (owner only):
+### Phase 7: Feed & Detail Pages ✅
+- [x] `ClipFeed` component — fetch + render clip list, play inline
+- [x] `ClipDetail` component — full clip view, playback, waveform, delete with confirmation
+- [x] "Edit Filters" mode on detail page (owner only):
   - Load raw audio + saved filterSettings
   - Modify filters + preview
   - Save → re-render filtered audio → PUT to server
-- [ ] `MyClips` page — logged-in user's clips
-- [ ] React Router: `/` (home), `/clips/:id` (detail), `/my-clips`, `/login`, `/register`
+- [x] `MyClips` page — logged-in user's clips
+- [x] React Router: `/` (home), `/clips/:id` (detail), `/my-clips`, `/login`, `/register`
+- [x] Auth-gated pages — clip detail redirects to home when logged out
 
 **Tests:**
 - **Unit (client, Vitest):**
@@ -573,11 +572,11 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 8: Waveform Generation
-- [ ] Server-side: on upload/update, decode audio with librosa → compute peaks array (~100–200 values)
-- [ ] Store peaks JSON in `waveform` column
-- [ ] `WaveformView` component — render peaks as SVG bars
-- [ ] Playback position indicator synced with audio element
+### Phase 8: Waveform Generation ✅
+- [x] Server-side: on upload/update, decode audio with librosa → compute peaks array (~100–200 values)
+- [x] Store peaks JSON in `waveform` column
+- [x] `WaveformView` component — render peaks as SVG bars
+- [x] Playback position indicator synced with audio element
 
 **Tests:**
 - **Unit (server, pytest):**
@@ -592,7 +591,7 @@ Order in the array = order in the audio processing chain.
 
 ---
 
-### Phase 9: Server-Side Filters (AI / ML)
+### Phase 9: Server-Side Filters (AI / ML) — Not Started
 - [ ] Define `ServerFilter` ABC in `server/app/filters/base.py`
 - [ ] Implement server-side filter registry
 - [ ] `GET /api/filters` — list available server-side filters (id, name, category, params)
@@ -601,6 +600,8 @@ Order in the array = order in the audio processing chain.
 - [ ] Client-side: "Process" button for server-side filters → upload audio → receive processed audio
 - [ ] Example filter: AI Denoise (librosa spectral gating or a simple model)
 - [ ] Integrate server-side filter results into the filter chain flow (replace working buffer)
+
+> **Note:** Client-side infrastructure is ready (`serverSide` flag in FilterPlugin, badge in FilterControl). Backend filter directory and implementations are not yet created. E2E Playwright tests are also not written for any phase.
 
 **Tests:**
 - **Unit (server, pytest):**
