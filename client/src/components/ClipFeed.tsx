@@ -25,14 +25,7 @@ export function ClipFeed() {
   }, []);
 
   if (loading) return <p style={{ color: 'var(--text-tertiary)' }}>Loading clips...</p>;
-  if (clips.length === 0) {
-    return (
-      <div className="empty-state">
-        <div className="empty-state-icon">🎵</div>
-        <p>No clips yet. Be the first to record one!</p>
-      </div>
-    );
-  }
+  if (clips.length === 0) return null;
 
   return (
     <div>
