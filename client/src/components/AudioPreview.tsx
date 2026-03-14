@@ -3,7 +3,7 @@ import { AudioPlayer } from './AudioPlayer';
 
 interface AudioPreviewProps {
   audioBlob: Blob | null;
-  onPlayWithFilters: (blob: Blob) => void;
+  onPlayWithFilters: (blob: Blob, onEnded?: () => void) => void;
   onStop: () => void;
   showRawPlayer?: boolean;
 }
@@ -14,7 +14,7 @@ export function AudioPreview({ audioBlob, onPlayWithFilters, onStop, showRawPlay
   if (!audioBlob) return null;
 
   const handlePreview = () => {
-    onPlayWithFilters(audioBlob);
+    onPlayWithFilters(audioBlob, () => setPreviewing(false));
     setPreviewing(true);
   };
 

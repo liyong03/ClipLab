@@ -15,6 +15,7 @@ export function useFilterChain() {
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const onEndedRef = useRef<(() => void) | null>(null);
 
   const toggleFilter = useCallback((filterId: string) => {
     setFilterSettings((prev) =>
@@ -33,7 +34,7 @@ export function useFilterChain() {
   }, []);
 
   const playWithFilters = useCallback(
-    async (audioBlob: Blob) => {
+    async (audioBlob: Blob, onEnded?: () => void) => {
       // Stop any existing playback
       if (sourceRef.current) {
         sourceRef.current.stop();
@@ -71,8 +72,11 @@ export function useFilterChain() {
       currentNode.connect(ctx.destination);
       source.start();
 
+      onEndedRef.current = onEnded || null;
       source.onended = () => {
         sourceRef.current = null;
+        onEndedRef.current?.();
+        onEndedRef.current = null;
       };
     },
     [filterSettings],
