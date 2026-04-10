@@ -6,6 +6,8 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Clip } from './pages/Clip';
 import { MyClips } from './pages/MyClips';
+import { Soundboards } from './pages/Soundboards';
+import { SoundboardEditor } from './pages/SoundboardEditor';
 
 export default function App() {
   return (
@@ -18,6 +20,9 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/clips/:id" element={<Clip />} />
             <Route path="/my-clips" element={<MyClips />} />
+            <Route path="/soundboards" element={<Soundboards />} />
+            <Route path="/soundboards/new" element={<SoundboardEditor />} />
+            <Route path="/soundboards/:id" element={<SoundboardEditor />} />
           </Route>
         </Routes>
       </AuthProvider>

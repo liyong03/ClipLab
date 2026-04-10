@@ -234,7 +234,7 @@ export function AudioPlayer({
   );
 }
 
-function WaveformBars({
+export function WaveformBars({
   peaks,
   progress,
   height,

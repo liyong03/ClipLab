@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { AudioPlayer } from '../components/AudioPlayer';
 
 interface ClipItem {
   id: string;
   title: string;
+  waveform: string | null;
   created_at: string;
 }
 
@@ -49,18 +51,26 @@ export function MyClips() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {clips.map((clip) => (
-            <div key={clip.id} className="clip-card">
-              <div className="clip-card-header">
-                <Link to={`/clips/${clip.id}`} className="clip-card-title">
-                  {clip.title}
-                </Link>
-                <span className="clip-card-meta">
-                  {new Date(clip.created_at).toLocaleDateString()}
-                </span>
+          {clips.map((clip) => {
+            const peaks = clip.waveform ? JSON.parse(clip.waveform) : undefined;
+            return (
+              <div key={clip.id} className="clip-card">
+                <div className="clip-card-header">
+                  <Link to={`/clips/${clip.id}`} className="clip-card-title">
+                    {clip.title}
+                  </Link>
+                  <span className="clip-card-meta">
+                    {new Date(clip.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <AudioPlayer
+                  src={`/api/clips/${clip.id}/audio`}
+                  peaks={peaks}
+                  height={40}
+                />
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

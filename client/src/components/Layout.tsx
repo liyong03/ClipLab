@@ -74,6 +74,13 @@ export function Layout() {
             </Link>
           )}
 
+          {user && (
+            <Link to="/soundboards" className={`sidebar-link ${isActive('/soundboards') ? 'active' : ''}`} onClick={handleNavClick}>
+              <span className="sidebar-link-icon">#</span>
+              Soundboards
+            </Link>
+          )}
+
           <div className="sidebar-nav-label">Account</div>
 
           {user ? (

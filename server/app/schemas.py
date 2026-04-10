@@ -20,3 +20,17 @@ class UserResponse(BaseModel):
     id: str
     username: str
     created_at: str
+
+
+class SoundboardTrackPayload(BaseModel):
+    clip_ids: list[str] = Field(default_factory=list)
+
+
+class SoundboardCreateRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+    tracks: list[SoundboardTrackPayload] = Field(default_factory=list)
+
+
+class SoundboardUpdateRequest(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=120)
+    tracks: list[SoundboardTrackPayload] | None = None
