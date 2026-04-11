@@ -284,15 +284,17 @@ export function SoundboardEditor() {
   }, [tickProgress]);
 
   useEffect(() => {
+    const audios = audiosRef.current;
+    const blobCache = blobCacheRef.current;
     return () => {
       cancelAnimationFrame(rafRef.current);
-      audiosRef.current.forEach((a) => {
+      audios.forEach((a) => {
         a.pause();
         a.src = '';
       });
       audiosRef.current = [];
-      blobCacheRef.current.forEach((url) => URL.revokeObjectURL(url));
-      blobCacheRef.current.clear();
+      blobCache.forEach((url) => URL.revokeObjectURL(url));
+      blobCache.clear();
     };
   }, []);
 
@@ -317,11 +319,9 @@ export function SoundboardEditor() {
     try {
       audio.src = await resolveClipUrl(pad.clipId);
       await audio.play();
-      setActivePadInTrack((prev) => {
-        const copy = Array(tracks.length).fill(null);
-        copy[trackIdx] = padIdx;
-        return copy;
-      });
+      const nextActive: (number | null)[] = Array(tracks.length).fill(null);
+      nextActive[trackIdx] = padIdx;
+      setActivePadInTrack(nextActive);
       setProgressInTrack(Array(tracks.length).fill(0));
       startProgressLoop();
     } catch (err) {

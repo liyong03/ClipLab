@@ -55,8 +55,8 @@ async def test_get_clip_by_id(auth_client):
 
 
 @pytest.mark.asyncio
-async def test_get_clip_not_found(client):
-    resp = await client.get("/api/clips/nonexistent-id")
+async def test_get_clip_not_found(auth_client):
+    resp = await auth_client.get("/api/clips/nonexistent-id")
     assert resp.status_code == 404
 
 

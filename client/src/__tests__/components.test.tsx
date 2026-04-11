@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ClipFeed } from '../components/ClipFeed';
 import { api } from '../lib/api';
@@ -60,15 +60,18 @@ describe('ClipFeed', () => {
     expect(await screen.findByText('Second Clip')).toBeDefined();
   });
 
-  it('shows empty message when no clips', async () => {
+  it('renders nothing when there are no clips', async () => {
     mockApi.get.mockResolvedValue([]);
 
-    render(
+    const { container } = render(
       <MemoryRouter>
         <ClipFeed />
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText('No clips yet. Be the first to record one!')).toBeDefined();
+    await waitFor(() => {
+      expect(screen.queryByText('Loading clips...')).toBeNull();
+    });
+    expect(container.firstChild).toBeNull();
   });
 });

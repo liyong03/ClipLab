@@ -11,7 +11,6 @@ import { api } from '../lib/api';
 function LoggedInHome() {
   const navigate = useNavigate();
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [duration, setDuration] = useState(0);
   const [title, setTitle] = useState('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -25,9 +24,8 @@ function LoggedInHome() {
     renderFilteredAudio,
   } = useFilterChain();
 
-  const handleRecordingComplete = (blob: Blob, dur: number) => {
+  const handleRecordingComplete = (blob: Blob) => {
     setAudioBlob(blob);
-    setDuration(dur);
     setError('');
   };
 
@@ -89,7 +87,7 @@ function LoggedInHome() {
               </button>
               <button
                 className="btn btn-ghost"
-                onClick={() => { setAudioBlob(null); setDuration(0); setTitle(''); stopPlayback(); }}
+                onClick={() => { setAudioBlob(null); setTitle(''); stopPlayback(); }}
               >
                 Discard
               </button>

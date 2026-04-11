@@ -17,15 +17,6 @@ export const delayFilter: FilterPlugin = {
     const feedbackGain = ctx.createGain();
     feedbackGain.gain.value = params.feedback ?? 0.4;
 
-    // Create dry/wet mix
-    const dryGain = ctx.createGain();
-    dryGain.gain.value = 1;
-
-    const wetGain = ctx.createGain();
-    wetGain.gain.value = 0.5;
-
-    const merger = ctx.createGain();
-
     // Feedback loop: delay → feedbackGain → delay
     delay.connect(feedbackGain);
     feedbackGain.connect(delay);

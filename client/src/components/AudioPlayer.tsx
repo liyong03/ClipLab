@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 
 export interface AudioPlayerProps {
   src: string | Blob;
@@ -28,50 +28,55 @@ export function AudioPlayer({
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [audioUrl, setAudioUrl] = useState('');
+  const [fetchedUrl, setFetchedUrl] = useState('');
   const animFrameRef = useRef<number>(0);
 
+  // For Blob sources, derive the object URL synchronously without setState.
+  const blobUrl = useMemo(
+    () => (typeof src === 'string' ? null : URL.createObjectURL(src)),
+    [src],
+  );
+
   useEffect(() => {
-    let revoke: string | null = null;
+    if (!blobUrl) return;
+    return () => URL.revokeObjectURL(blobUrl);
+  }, [blobUrl]);
 
-    if (typeof src === 'string') {
-      const token = localStorage.getItem('token');
-      fetch(src, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+  // For string sources, fetch with auth and set the blob URL asynchronously.
+  useEffect(() => {
+    if (typeof src !== 'string') return;
+    let created: string | null = null;
+    let cancelled = false;
+    const token = localStorage.getItem('token');
+    fetch(src, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => res.blob())
+      .then((blob) => {
+        if (cancelled) return;
+        created = URL.createObjectURL(blob);
+        setFetchedUrl(created);
       })
-        .then((res) => res.blob())
-        .then((blob) => {
-          const url = URL.createObjectURL(blob);
-          revoke = url;
-          setAudioUrl(url);
-        })
-        .catch(console.error);
-    } else {
-      const url = URL.createObjectURL(src);
-      revoke = url;
-      setAudioUrl(url);
-    }
-
+      .catch(console.error);
     return () => {
-      if (revoke) URL.revokeObjectURL(revoke);
+      cancelled = true;
+      if (created) URL.revokeObjectURL(created);
     };
   }, [src]);
 
-  const updateProgress = useCallback(() => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-    if (playing) {
-      animFrameRef.current = requestAnimationFrame(updateProgress);
-    }
-  }, [playing]);
+  const audioUrl = blobUrl ?? fetchedUrl;
 
   useEffect(() => {
-    if (playing) {
-      animFrameRef.current = requestAnimationFrame(updateProgress);
-    }
+    if (!playing) return;
+    const tick = () => {
+      if (audioRef.current) {
+        setCurrentTime(audioRef.current.currentTime);
+      }
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+    animFrameRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [playing, updateProgress]);
+  }, [playing]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
